@@ -18,9 +18,9 @@
 ## Install
 Use the source files
 
-Install it with platform io : [https://platformio.org/lib/show/13307/RGB%20Driver%20ESP](https://platformio.org/lib/show/13307/RGB%20Driver%20ESP)
+Install it with platform io : [https://registry.platformio.org/libraries/axoulc/TAS5720%20Arduino](https://registry.platformio.org/libraries/axoulc/TAS5720%20Arduino)
 ```
-pio lib install "lefrenchpoc/RGB Driver ESP"
+pio pkg install --library "axoulc/TAS5720 Arduino@^1.0"
 ```
 or with the `platformio.ini` file :
 
@@ -28,7 +28,7 @@ or with the `platformio.ini` file :
 [env:myenv]
 ;...
 
-lib_deps = lefrenchpoc/RGB Driver ESP @ ^0.2
+lib_deps = axoulc/TAS5720 Arduino@^1.0
 ```
 
 ## Usage
