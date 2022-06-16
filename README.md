@@ -51,7 +51,7 @@ void setup() {
     amp.setDigitalBoost(DIGITAL_BOOST_6DB);
     amp.setVolume(200);
     // Do Anything you want here
-    digitalWrite(SPEAKER_SD, LOW);
+    digitalWrite(SPEAKER_SD, HIGH);
     amp.mute(false);
     // Play some music
 }

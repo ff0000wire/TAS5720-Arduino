@@ -1,6 +1,6 @@
 {
     "name": "TAS5720 Arduino",
-    "version": "1.1",
+    "version": "1.2",
     "keywords": "Texas Instrument, TAS5720, TAS5720A, arduino, esp32, esp8266, i2c",
     "description": "Arduino library to configure TI TAS5720(A) Class D amplifier.",
     "repository":
