@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to RGB Driver 👋</h1>
+<h1 align="center">Welcome to TAS5720 Arduino Library 👋</h1>
 <p>
   <a href="https://github.com/axoulc/TAS5720-Arduino/blob/main/LICENSE" target="_blank">
     <img alt="License: MIT License" src="https://img.shields.io/badge/License-MIT License-yellow.svg" />
