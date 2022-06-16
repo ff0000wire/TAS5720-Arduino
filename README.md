@@ -1,7 +1,7 @@
 <h1 align="center">Welcome to RGB Driver 👋</h1>
 <p>
   <a href="https://github.com/axoulc/TAS5720-Arduino/blob/main/LICENSE" target="_blank">
-    <img alt="License: GPL--3.0" src="https://img.shields.io/badge/License-MIT License-yellow.sv" />
+    <img alt="License: MIT License" src="https://img.shields.io/badge/License-MIT License-yellow.svg" />
   </a>
 </p>
 
@@ -69,7 +69,7 @@ void loop() {
 
 👤 **Axel Chabot**
 
-* Github: [@axoul](https://github.com/axoulc)
+* Github: [@axoulc](https://github.com/axoulc)
 
 ## Show your support
 
@@ -77,5 +77,5 @@ Give a ⭐️ if this project helped you!
 
 ## 📝 License
 
-Copyright © 2021 [Le French POC](https://github.com/axoulc).<br />
+Copyright © 2022 [Axel Chabot](https://github.com/axoulc).<br />
 This project is [MIT](https://github.com/axoulc/TAS5720-Arduino/blob/main/LICENSE) licensed.
