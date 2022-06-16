@@ -20,7 +20,7 @@ Use the source files
 
 Install it with platform io : [https://registry.platformio.org/libraries/axoulc/TAS5720%20Arduino](https://registry.platformio.org/libraries/axoulc/TAS5720%20Arduino)
 ```
-pio pkg install --library "axoulc/TAS5720 Arduino@^1.0"
+pio pkg install --library "axoulc/TAS5720 Arduino@^1.1"
 ```
 or with the `platformio.ini` file :
 
@@ -28,7 +28,7 @@ or with the `platformio.ini` file :
 [env:myenv]
 ;...
 
-lib_deps = axoulc/TAS5720 Arduino@^1.0
+lib_deps = axoulc/TAS5720 Arduino@^1.1
 ```
 
 ## Usage
