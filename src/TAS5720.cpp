@@ -9,6 +9,7 @@
 
 /**
  * @brief Constructor
+ * @note You are responsible for i2c.begin
  * @param i2c I2C bus (Wire instance)
  * @param addr TAS5720 I2C address
  * @param debug Enable debug mode
@@ -17,15 +18,12 @@ TAS5720::TAS5720(TwoWire &i2c, uint8_t addr, bool debug) {
     _i2c = &i2c;
     _addr = addr;
     _debug = debug;
-    _i2c->begin();
-    _i2c->setClock(TAS5720_I2C_SPEED);
 }
 
 /**
  * @brief Destructor
  */
 TAS5720::~TAS5720() {
-    _i2c->end();
 }
 
 /**
