@@ -7,6 +7,10 @@
  */
 #include "TAS5720.h"
 
+#ifndef _SERIAL
+    #define _SERIAL Serial
+#endif
+
 /**
  * @brief Constructor
  * @note You are responsible for i2c.begin
@@ -37,17 +41,17 @@ void TAS5720::_write(uint8_t reg, uint8_t data) {
     _i2c->write(data);
     if (_i2c->endTransmission()) {
         if (_debug) {
-            Serial.print("TAS5720: Error writing to register ");
-            Serial.print(reg, HEX);
-            Serial.print(" with data ");
-            Serial.println(data, HEX);
+            _SERIAL.print("TAS5720: Error writing to register ");
+            _SERIAL.print(reg, HEX);
+            _SERIAL.print(" with data ");
+            _SERIAL.println(data, HEX);
         }
     } else {
         if (_debug) {
-            Serial.print("TAS5720: Writing to register ");
-            Serial.print(reg, HEX);
-            Serial.print(" with data ");
-            Serial.println(data, HEX);
+            _SERIAL.print("TAS5720: Writing to register ");
+            _SERIAL.print(reg, HEX);
+            _SERIAL.print(" with data ");
+            _SERIAL.println(data, HEX);
         }
     }
 }
@@ -64,16 +68,16 @@ uint8_t TAS5720::_read(uint8_t reg) {
     if (_i2c->requestFrom(_addr, (uint8_t) 1)) {
         uint8_t buf = _i2c->read();
         if (_debug) {
-            Serial.print("TAS5720: Reading from register ");
-            Serial.println(reg, HEX);
-            Serial.print(" with data ");
-            Serial.println(buf, HEX);
+            _SERIAL.print("TAS5720: Reading from register ");
+            _SERIAL.println(reg, HEX);
+            _SERIAL.print(" with data ");
+            _SERIAL.println(buf, HEX);
         }
         return buf;
     } else {
         if (_debug) {
-            Serial.print("TAS5720: Error reading from register ");
-            Serial.println(reg, HEX);
+            _SERIAL.print("TAS5720: Error reading from register ");
+            _SERIAL.println(reg, HEX);
         }
         return 0;
     }
