@@ -1,9 +1,8 @@
 /**
  * @file TAS5720.cpp
- * @brief TAS5720 class implementation for I2C communication
- * @author Axel Chabot
- * @date: 2022-06-16
- * @version 1.0
+ * @brief TAS5720L/M class implementation for I2C communication.
+ *
+ * Register map and bit fields per SLOS903B (TAS5720L/M datasheet).
  */
 #include "TAS5720.h"
 
@@ -11,30 +10,16 @@
     #define _SERIAL Serial
 #endif
 
-/**
- * @brief Constructor
- * @note You are responsible for i2c.begin
- * @param i2c I2C bus (Wire instance)
- * @param addr TAS5720 I2C address
- * @param debug Enable debug mode
- */
 TAS5720::TAS5720(TwoWire &i2c, uint8_t addr, bool debug) {
     _i2c = &i2c;
     _addr = addr;
     _debug = debug;
+    volume = 0;
 }
 
-/**
- * @brief Destructor
- */
 TAS5720::~TAS5720() {
 }
 
-/**
- * @brief Write register
- * @param reg Register
- * @param data Data to write
- */
 void TAS5720::_write(uint8_t reg, uint8_t data) {
     _i2c->beginTransmission(_addr);
     _i2c->write(reg);
@@ -56,11 +41,6 @@ void TAS5720::_write(uint8_t reg, uint8_t data) {
     }
 }
 
-/**
- * @brief Read register
- * @param reg Register
- * @return Data read
- */
 uint8_t TAS5720::_read(uint8_t reg) {
     _i2c->beginTransmission(_addr);
     _i2c->write(reg);
@@ -83,309 +63,170 @@ uint8_t TAS5720::_read(uint8_t reg) {
     }
 }
 
-/**
- * @brief Get TAS5720 chip ID
- * @return ID
- */
 uint8_t TAS5720::getDeviceIdentification() {
-    return _read(TAS5720_ADDRESS_DEVICE_IDENTIFICATION);
+    return _read(TAS5720_ADDR_DEVICE_ID);
 }
 
-/**
- * @brief Get sleep mode
- * @return Enable ou Disable
- */
+// ---------- Power Control (0x01) ----------
+
 bool TAS5720::getSleepMode() {
-    return bitRead(_read(TAS5720_ADDRESS_POWER_CONTROL), 1);
+    return bitRead(_read(TAS5720_ADDR_POWER_CONTROL), 1);
 }
 
-/**
- * @brief Set sleep mode
- * @param sleep Enable ou Disable
- */
 void TAS5720::setSleepMode(bool sleep) {
-    _rxData = _read(TAS5720_ADDRESS_POWER_CONTROL);
-    _write(TAS5720_ADDRESS_POWER_CONTROL, bitWrite(_rxData, 1, sleep));
+    uint8_t tmp = _read(TAS5720_ADDR_POWER_CONTROL);
+    _write(TAS5720_ADDR_POWER_CONTROL, bitWrite(tmp, 1, sleep));
 }
 
-/**
- * @brief Get Shutdown state
- * @return Enable ou Disable
- */
 bool TAS5720::getShutdown() {
-    return !bitRead(_read(TAS5720_ADDRESS_POWER_CONTROL), 0);
+    return !bitRead(_read(TAS5720_ADDR_POWER_CONTROL), 0);
 }
 
-/**
- * @brief Set Shutdown state
- * @param shutdown Enable ou Disable
- */
 void TAS5720::setShutdown(bool shutdown) {
-    _rxData = _read(TAS5720_ADDRESS_POWER_CONTROL);
-    _write(TAS5720_ADDRESS_POWER_CONTROL, bitWrite(_rxData, 0, !shutdown));
+    uint8_t tmp = _read(TAS5720_ADDR_POWER_CONTROL);
+    _write(TAS5720_ADDR_POWER_CONTROL, bitWrite(tmp, 0, !shutdown));
 }
 
-/**
- * @brief Get Serial Audio Interface Format
- * @return Format (Check SAIFormat struct)
- */
+// ---------- Digital Control 1 (0x02) ----------
+
 SAIFormat TAS5720::getSerialAudioInterfaceFormat() {
-    return (SAIFormat) (_read(TAS5720_ADDRESS_DIGITAL_CONTROL) & 0x07);
+    return (SAIFormat) (_read(TAS5720_ADDR_DIGITAL_CONTROL_1) & 0x07);
 }
 
-/**
- * @brief Set Serial Audio Interface Format
- * @param format
- */
 void TAS5720::setSerialAudioInterfaceFormat(SAIFormat format) {
-    uint8_t tmp = _read(TAS5720_ADDRESS_DIGITAL_CONTROL);
-    tmp &= 0xF8;
-    tmp |= format;
-    _write(TAS5720_ADDRESS_DIGITAL_CONTROL, tmp);
+    uint8_t tmp = _read(TAS5720_ADDR_DIGITAL_CONTROL_1);
+    tmp &= ~0x07;
+    tmp |= (format & 0x07);
+    _write(TAS5720_ADDR_DIGITAL_CONTROL_1, tmp);
 }
 
-/**
- * @brief Get single or double speed
- * @return False single speed, True double speed
- */
 bool TAS5720::getSpeed() {
-    return bitRead(_read(TAS5720_ADDRESS_DIGITAL_CONTROL), 3);
+    return bitRead(_read(TAS5720_ADDR_DIGITAL_CONTROL_1), 3);
 }
 
-/**
- * @brief Set single or double speed
- * @param doubleSpeed False single speed, True double speed
- */
 void TAS5720::setSpeed(bool doubleSpeed) {
-    _rxData = _read(TAS5720_ADDRESS_DIGITAL_CONTROL);
-    _write(TAS5720_ADDRESS_DIGITAL_CONTROL, bitWrite(_rxData, 3, doubleSpeed));
+    uint8_t tmp = _read(TAS5720_ADDR_DIGITAL_CONTROL_1);
+    _write(TAS5720_ADDR_DIGITAL_CONTROL_1, bitWrite(tmp, 3, doubleSpeed));
 }
 
-/**
- * @brief Get Digital Boost
- * @return Boost (Check Boost struct)
- */
-DigitalBoost TAS5720::getDigitalBoost() {
-    return (DigitalBoost) ((_read(TAS5720_ADDRESS_DIGITAL_CONTROL) & 0x30) >> 4);
-}
-
-/**
- * @brief Set Digital Boost
- * @param boost
- */
-void TAS5720::setDigitalBoost(DigitalBoost boost) {
-    uint8_t tmp = _read(TAS5720_ADDRESS_DIGITAL_CONTROL);
-    tmp &= 0xCF;
-    tmp |= (boost << 4);
-    _write(TAS5720_ADDRESS_DIGITAL_CONTROL, tmp);
-}
-
-/**
- * @brief Get High Pass Filter Status
- * @return False : Active, True : Bypass
- */
 bool TAS5720::getHighPassFilterMode() {
-    return bitRead(_read(TAS5720_ADDRESS_DIGITAL_CONTROL), 7);
+    return bitRead(_read(TAS5720_ADDR_DIGITAL_CONTROL_1), 7);
 }
 
-/**
- * @brief Set High Pass Filter Status
- * @param bypass False : Active, True : Bypass
- */
 void TAS5720::setHighPassFilterMode(bool bypass) {
-    _rxData = _read(TAS5720_ADDRESS_DIGITAL_CONTROL);
-    _write(TAS5720_ADDRESS_DIGITAL_CONTROL, bitWrite(_rxData, 7, bypass));
+    uint8_t tmp = _read(TAS5720_ADDR_DIGITAL_CONTROL_1);
+    _write(TAS5720_ADDR_DIGITAL_CONTROL_1, bitWrite(tmp, 7, bypass));
 }
 
-/**
- * @brief Mute left channel
- * @param mute true : Mute, false : Unmute
- */
-void TAS5720::muteLeft(bool mute) {
-    _rxData = _read(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION);
-    _write(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION,
-           bitWrite(_rxData, 0, mute));
+// ---------- Digital Control 2 (0x03) ----------
+// Layout: RSV[7:5]=100, MUTE[4], RSV[3]=0, TDM_SLOT_SELECT[2:0].
+
+bool TAS5720::getMute() {
+    return bitRead(_read(TAS5720_ADDR_DIGITAL_CONTROL_2), 4);
 }
 
-/**
- * @brief Mute right channel
- * @param mute true : Mute, false : Unmute
- */
-void TAS5720::muteRight(bool mute) {
-    _rxData = _read(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION);
-    _write(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION,
-           bitWrite(_rxData, 1, mute));
+void TAS5720::mute(bool m) {
+    uint8_t tmp = _read(TAS5720_ADDR_DIGITAL_CONTROL_2);
+    // Force RSV[7:5]=100 and RSV[3]=0 per datasheet.
+    tmp = (tmp & 0x07) | 0x80;
+    bitWrite(tmp, 4, m);
+    _write(TAS5720_ADDR_DIGITAL_CONTROL_2, tmp);
 }
 
-/**
- * @brief Set Fade
- * @param fade true : Fade, false : No Fade
- */
-void TAS5720::setFade(bool fade) {
-    _rxData = _read(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION);
-    _write(TAS5720_ADDRESS_VOLUME_CONTROL_CONFIGURATION,
-           bitWrite(_rxData, 7, fade));
-}
+// ---------- Volume Control (0x04) ----------
 
-/**
- * @brief Get Volume
- */
 void TAS5720::getVolume() {
-    volumeLeft = _read(TAS5720_ADDRESS_VOLUME_CONTROL_LEFT);
-    volumeRight = _read(TAS5720_ADDRESS_VOLUME_CONTROL_RIGHT);
+    volume = _read(TAS5720_ADDR_VOLUME_CONTROL);
 }
 
-/**
- * @brief Set Volume
- * @param left
- * @param right
- */
-void TAS5720::setVolume(uint8_t left, uint8_t right) {
-    _write(TAS5720_ADDRESS_VOLUME_CONTROL_LEFT, left);
-    _write(TAS5720_ADDRESS_VOLUME_CONTROL_RIGHT, right);
+void TAS5720::setVolume(uint8_t v) {
+    _write(TAS5720_ADDR_VOLUME_CONTROL, v);
 }
 
-/**
- * @brief Get Channel Select
- * @return Channel (Check ChannelSelection struct)
- */
-ChannelSelection TAS5720::getChannelSelection() {
-    return (ChannelSelection) bitRead(_read(TAS5720_ADDRESS_ANALOG_CONTROL), 1);
-}
+// ---------- Analog Control (0x06) ----------
+// Layout: RSV[7]=0, PWM_RATE[6:4], ANALOG_GAIN[3:2], RSV[1:0]=01.
 
-/**
- * @brief Set Channel Select
- * @param channel
- */
-void TAS5720::setChannelSelection(ChannelSelection channel) {
-    _rxData = _read(TAS5720_ADDRESS_ANALOG_CONTROL);
-    _write(TAS5720_ADDRESS_ANALOG_CONTROL, 0x80 | bitWrite(_rxData, 1, channel));
-}
-
-/**
- * @brief Get Analog Gain
- * @return gain (Check AnalogGain struct)
- */
 AnalogGain TAS5720::getAnalogGain() {
-    return (AnalogGain) ((_read(TAS5720_ADDRESS_ANALOG_CONTROL) >> 2) & 0x03);
+    return (AnalogGain) ((_read(TAS5720_ADDR_ANALOG_CONTROL) >> 2) & 0x03);
 }
 
-/**
- * @brief Set Analog Gain
- * @param gain
- */
 void TAS5720::setAnalogGain(AnalogGain gain) {
-    uint8_t tmp = _read(TAS5720_ADDRESS_ANALOG_CONTROL);
-    tmp &= 0xF3;
-    tmp |= (gain << 2);
-    tmp |= 0x80;
-    _write(TAS5720_ADDRESS_ANALOG_CONTROL, tmp);
+    uint8_t tmp = _read(TAS5720_ADDR_ANALOG_CONTROL);
+    // Clear bit 7 (RSV must be 0) and ANALOG_GAIN[3:2].
+    tmp &= 0x73;
+    tmp |= ((gain & 0x03) << 2);
+    // Force RSV[1:0] = 01.
+    tmp = (tmp & 0xFC) | 0x01;
+    _write(TAS5720_ADDR_ANALOG_CONTROL, tmp);
 }
 
-/**
- * @brief Get PWM Rate
- * @return PWM Rate (Check PWMRate struct)
- */
 PWMRate TAS5720::getPWMRate() {
-    return (PWMRate) ((_read(TAS5720_ADDRESS_ANALOG_CONTROL) >> 4) & 0x07);
+    return (PWMRate) ((_read(TAS5720_ADDR_ANALOG_CONTROL) >> 4) & 0x07);
 }
 
-/**
- * @brief Set PWM Rate
- * @param rate
- */
 void TAS5720::setPWMRate(PWMRate rate) {
-    uint8_t tmp = _read(TAS5720_ADDRESS_ANALOG_CONTROL);
-    tmp &= 0x8F;
-    tmp |= (rate << 4);
-    tmp |= 0x80;
-    _write(TAS5720_ADDRESS_ANALOG_CONTROL, tmp);
+    uint8_t tmp = _read(TAS5720_ADDR_ANALOG_CONTROL);
+    // Clear bit 7 (RSV must be 0) and PWM_RATE[6:4].
+    tmp &= 0x0F;
+    tmp |= ((rate & 0x07) << 4);
+    // Force RSV[1:0] = 01.
+    tmp = (tmp & 0xFC) | 0x01;
+    _write(TAS5720_ADDR_ANALOG_CONTROL, tmp);
 }
-/**
- * @brief get Over Temperature Error
- * @return true : Error, false : No Error
- */
+
+// ---------- Fault Configuration / Error Status (0x08) ----------
+
 bool TAS5720::getOverTemperatureErrorStatus() {
-    return bitRead(_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS), 0);
+    return bitRead(_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS), 0);
 }
 
-/**
- * @brief get Output DC Error
- * @return true : Error, false : No Error
- */
 bool TAS5720::getOutputDCErrorStatus() {
-    return bitRead(_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS), 1);
+    return bitRead(_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS), 1);
 }
 
-/**
- * @brief get Over Current Error
- * @return true : Error, false : No Error
- */
 bool TAS5720::getOverCurrentErrorStatus() {
-    return bitRead(_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS), 2);
+    return bitRead(_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS), 2);
 }
 
-/**
- * @brief get Clock Error
- * @return true : Error, false : No Error
- */
 bool TAS5720::getClockErrorStatus() {
-    return bitRead(_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS), 3);
+    return bitRead(_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS), 3);
 }
 
-/**
- * @brief get Error(s) register
- * @return true : Error(s), false : No Error
- */
 bool TAS5720::getErrorStatus() {
-    return (_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS) & 0x0F) != 0x00;
+    return (_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS) & 0x0F) != 0x00;
 }
 
-/**
- * @brief get Over Current Threshold(
- * @return OCE Threshold (Check OCEThreshold struct)
- */
 OCEThreshold TAS5720::getOCEThreshold() {
-    return (OCEThreshold) ((_read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS) >> 4) & 0x03);
+    return (OCEThreshold) ((_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS) >> 4) & 0x03);
 }
 
-/**
- * @brief set Over Current Threshold
- * @param threshold
- */
 void TAS5720::setOCEThreshold(OCEThreshold threshold) {
-    uint8_t tmp = _read(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS);
+    uint8_t tmp = _read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS);
     tmp &= 0xCF;
-    tmp |= (threshold << 4);
-    _write(TAS5720_ADDRESS_FAULT_CONFIGURATION_ERROR_STATUS, tmp);
+    tmp |= ((threshold & 0x03) << 4);
+    _write(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS, tmp);
 }
 
-/**
- * @brief get Digita lClipper
- * @return Value (20bits)
- */
+// ---------- Digital Clipper (split across 0x01, 0x10, 0x11) ----------
+
 uint32_t TAS5720::getDigitalClipper() {
     uint32_t clip = 0;
-    clip |= ((_read(TAS5720_ADDRESS_DIGITAL_CLIPPER_1) >> 2) & 0x3F);
-    clip |= (_read(TAS5720_ADDRESS_DIGITAL_CLIPPER_2) << 6);
-    clip |= (((_read(TAS5720_ADDRESS_POWER_CONTROL) >> 2) & 0x3F) << 14);
+    clip |= ((_read(TAS5720_ADDR_DIGITAL_CLIPPER_1) >> 2) & 0x3F);
+    clip |= (_read(TAS5720_ADDR_DIGITAL_CLIPPER_2) << 6);
+    clip |= (((_read(TAS5720_ADDR_POWER_CONTROL) >> 2) & 0x3F) << 14);
     return clip;
 }
 
-/**
- * @brief set Digital Clipper
- * @param clip
- */
 void TAS5720::setDigitalClipper(uint32_t clip) {
     if (clip < 0x100000) {
-        uint8_t tmp = _read(TAS5720_ADDRESS_DIGITAL_CLIPPER_1);
+        uint8_t tmp = _read(TAS5720_ADDR_DIGITAL_CLIPPER_1);
         tmp &= 0x03;
         tmp |= (clip << 2);
-        _write(TAS5720_ADDRESS_DIGITAL_CLIPPER_1, tmp);
-        _write(TAS5720_ADDRESS_DIGITAL_CLIPPER_2, clip >> 6);
-        tmp = _read(TAS5720_ADDRESS_POWER_CONTROL);
+        _write(TAS5720_ADDR_DIGITAL_CLIPPER_1, tmp);
+        _write(TAS5720_ADDR_DIGITAL_CLIPPER_2, clip >> 6);
+        tmp = _read(TAS5720_ADDR_POWER_CONTROL);
         tmp &= 0x03;
         tmp |= ((clip >> 14) << 2);
-        _write(TAS5720_ADDRESS_POWER_CONTROL, tmp);
+        _write(TAS5720_ADDR_POWER_CONTROL, tmp);
     }
 }

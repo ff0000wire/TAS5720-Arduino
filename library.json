@@ -1,18 +1,21 @@
 {
     "name": "TAS5720 Arduino",
-    "version": "1.2",
-    "keywords": "Texas Instrument, TAS5720, TAS5720A, arduino, esp32, esp8266, i2c",
-    "description": "Arduino library to configure TI TAS5720(A) Class D amplifier.",
+    "version": "2.0",
+    "keywords": "Texas Instrument, TAS5720, TAS5720L, TAS5720M, arduino, esp32, esp8266, i2c",
+    "description": "Arduino library to configure the TI TAS5720L/M Class-D amplifier. Forked from axoulc/TAS5720-Arduino (TAS5720A) and adapted for the TAS5720L/M register map.",
     "repository":
     {
         "type": "git",
-        "url": "https://github.com/axoulc/TAS5720-Arduino.git"
+        "url": "https://github.com/ff0000wire/TAS5720-Arduino.git"
     },
     "frameworks": "arduino",
     "authors":
     [
         {
-            "name": "axoulc",
+            "name": "axoulc"
+        },
+        {
+            "name": "ff0000wire",
             "maintainer": true
         }
     ]
