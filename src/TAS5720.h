@@ -30,6 +30,15 @@
 #define TAS5720_ADDR_DIGITAL_CLIPPER_2         0x10
 #define TAS5720_ADDR_DIGITAL_CLIPPER_1         0x11
 
+// Fault/Error status bits in register 0x08 (see datasheet Table 22).
+// CLKE is non-latching/self-clearing (reads high whenever the part is not in
+// active mode — e.g. PVDD/16V rail absent or a halted SAIF clock); OTE/DCE/OCE
+// are latching and clear only on an SDZ toggle.
+#define TAS5720_FAULT_OTE  0x01  // bit 0: over-temperature (latching)
+#define TAS5720_FAULT_DCE  0x02  // bit 1: output DC error (latching)
+#define TAS5720_FAULT_OCE  0x04  // bit 2: over-current / output short (latching)
+#define TAS5720_FAULT_CLKE 0x08  // bit 3: SAIF clock error (non-latching)
+
 typedef enum : uint8_t {
     SAI_24_BITS_RIGHT_JUSTIFIED   = 0,
     SAI_20_BITS_LEFT_JUSTIFIED    = 1,
@@ -119,6 +128,10 @@ public:
     bool getOverCurrentErrorStatus();
     bool getClockErrorStatus();
     bool getErrorStatus();
+
+    // Raw read of reg 0x08; decode with the TAS5720_FAULT_* masks. One I2C
+    // transaction (vs. one per per-bit getter).
+    uint8_t getFaultStatus();
 
     OCEThreshold getOCEThreshold();
     void setOCEThreshold(OCEThreshold threshold);

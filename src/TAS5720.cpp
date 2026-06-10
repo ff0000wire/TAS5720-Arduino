@@ -196,6 +196,10 @@ bool TAS5720::getErrorStatus() {
     return (_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS) & 0x0F) != 0x00;
 }
 
+uint8_t TAS5720::getFaultStatus() {
+    return _read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS);
+}
+
 OCEThreshold TAS5720::getOCEThreshold() {
     return (OCEThreshold) ((_read(TAS5720_ADDR_FAULT_CONFIG_ERROR_STATUS) >> 4) & 0x03);
 }
