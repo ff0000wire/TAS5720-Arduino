@@ -93,6 +93,15 @@ public:
 
     uint8_t getDeviceIdentification();
 
+    // Raw register read, for diagnostics that need a register this API does not
+    // model (SendAudioI2S dumps 0x02/0x03/0x04/0x06 when chasing a TAS5720 CLKE).
+    uint8_t readReg(uint8_t reg);
+
+    // Power Control (0x01) as a raw byte — the bit accessors above decode single
+    // bits, but the CLKE diagnostics want the whole register before/after a
+    // shutdown->active cycle.
+    uint8_t readPowerControl();
+
     bool getSleepMode();
     void setSleepMode(bool sleep);
 

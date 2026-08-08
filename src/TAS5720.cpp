@@ -67,6 +67,14 @@ uint8_t TAS5720::getDeviceIdentification() {
     return _read(TAS5720_ADDR_DEVICE_ID);
 }
 
+uint8_t TAS5720::readReg(uint8_t reg) {
+    return _read(reg);
+}
+
+uint8_t TAS5720::readPowerControl() {
+    return _read(TAS5720_ADDR_POWER_CONTROL);
+}
+
 // ---------- Power Control (0x01) ----------
 
 bool TAS5720::getSleepMode() {
